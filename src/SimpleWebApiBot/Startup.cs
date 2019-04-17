@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SimpleWebApiBot.Controllers;
+using SimpleWebApiBot.Timer;
 using System;
 
 namespace SimpleWebApiBot
@@ -41,7 +42,7 @@ namespace SimpleWebApiBot
 
             services.AddSingleton<IAdapterIntegration>(sp => 
             {
-                var logger = sp.GetRequiredService<ILogger<BotController>>();
+                var logger = sp.GetRequiredService<ILogger<IAdapterIntegration>>();
 
                 var adapter = new BotFrameworkAdapter(
                     credentialProvider: new SimpleCredentialProvider(),
@@ -55,6 +56,8 @@ namespace SimpleWebApiBot
 
                 return adapter;
             });
+
+            services.AddSingleton<Timers>();
         }
     }
 }

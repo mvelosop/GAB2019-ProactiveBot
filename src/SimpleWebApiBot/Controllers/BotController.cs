@@ -9,6 +9,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
+using SimpleWebApiBot.Timer;
 
 namespace SimpleWebApiBot.Controllers
 {
@@ -17,13 +18,16 @@ namespace SimpleWebApiBot.Controllers
     {
         private readonly ILogger<BotController> _logger;
         private readonly IAdapterIntegration _adapter;
+        private readonly Timers _timers;
 
         public BotController(
             ILogger<BotController> logger,
-            IAdapterIntegration adapter)
+            IAdapterIntegration adapter,
+            Timers timers)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _adapter = adapter ?? throw new ArgumentNullException(nameof(adapter));
+            _timers = timers ?? throw new ArgumentNullException(nameof(timers));
         }
 
         [HttpPost("/simple-bot/messages")]
@@ -42,8 +46,25 @@ namespace SimpleWebApiBot.Controllers
 
                 _logger.LogInformation("----- Receiving message activity - Text: {Text}", text);
 
-                // Echo back to the user whatever they typed.
-                await turnContext.SendActivityAsync($"You typed \"{text}\"");
+                if (text.StartsWith("timer", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    var seconds = Convert.ToInt32(text.Substring(text.IndexOf(" ")));
+
+                    await turnContext.SendActivityAsync($"Starting a timer to go off in {seconds}s");
+
+                    _timers.AddTimer(turnContext.Activity.GetConversationReference(), seconds);
+                }
+                else if (text.StartsWith("list", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    var alarms = string.Join("\n", _timers.List.Select(a => $"- #{a.Number} [{a.Seconds}s] - {a.Status} ({a.Elapsed / 1000:n3}s)"));
+
+                    await turnContext.SendActivityAsync($"**TIMERS**\n{alarms}");
+                }
+                else
+                {
+                    // Echo back to the user whatever they typed.
+                    await turnContext.SendActivityAsync($"You typed \"{text}\"");
+                }
             }
             else
             {
