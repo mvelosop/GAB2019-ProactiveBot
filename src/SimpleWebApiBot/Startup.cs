@@ -8,6 +8,7 @@ using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SimpleWebApiBot.Bots;
 using SimpleWebApiBot.Controllers;
 using SimpleWebApiBot.Timer;
 using System;
@@ -58,6 +59,7 @@ namespace SimpleWebApiBot
             });
 
             services.AddSingleton<Timers>();
+            services.AddTransient<IBot, ProactiveBot>();
         }
     }
 }
