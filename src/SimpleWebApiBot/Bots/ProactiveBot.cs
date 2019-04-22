@@ -30,15 +30,15 @@ namespace SimpleWebApiBot.Bots
 
                 _logger.LogInformation("----- Receiving message activity - Text: {Text}", text);
 
-                if (text.StartsWith("timer", StringComparison.InvariantCultureIgnoreCase))
+                if (text.StartsWith("timer ", StringComparison.InvariantCultureIgnoreCase))
                 {
                     var seconds = Convert.ToInt32(text.Substring(text.IndexOf(" ")));
 
-                    await turnContext.SendActivityAsync($"Starting a timer to go off in {seconds}s");
+                    await turnContext.SendActivityAsync($"Starting a {seconds}s timer");
 
                     _timers.AddTimer(turnContext.Activity.GetConversationReference(), seconds);
                 }
-                else if (text.StartsWith("list", StringComparison.InvariantCultureIgnoreCase))
+                else if (text.StartsWith("timers", StringComparison.InvariantCultureIgnoreCase))
                 {
                     var alarms = string.Join("\n", _timers.List.Select(a => $"- #{a.Number} [{a.Seconds}s] - {a.Status} ({a.Elapsed / 1000:n3}s)"));
 
